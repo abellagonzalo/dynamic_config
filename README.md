@@ -12,6 +12,88 @@ This project is part of GSoC 2013 program. The goal of the project is to explore
 and the current parameter system into a new brand unified API. The scope is limited to the C++ API, but having
 in mind that it should be easy to implement in other client libraries.
 
+## Overview ##
+
+This demo was made to demonstrate certain design decisions. It is not expected to be a drop in replacement for the
+existing tools rosparam and dynamic_reconfire. This prototype shows a different set of choices of the current
+tools for some of the key trade-offs.
+
+To show to the community the general idea of my design, the prototype implements just the basic features which
+I considered the most important:
+
+* Publish a configuration.
+* Request the configuration of a node.
+* Reconfigure the local configuration or a node's configuration.
+* Accept or reject the new configuration.
+* Notify other nodes when configuration changes.
+* Introspection of parameters in a configuration.
+
+
+
+Metadata of parameters such as description, range/domain or parameter order was discussed and implemented in early
+prototypes. It hasn't been included in this one because I did not considered it a basic feature. It would be a must
+in case this prototype evolve to become a drop in replacement for the current tools.
+
+External tools like a general GUI or a command line tool to reconfigure parameters has not also been implemented. Again,
+it would be a must if the prototype evolve to become a drop in replacement. It is important to point out that the
+current prototype has been designed with this tools in mind. It is not necessary a big effort to develop this tools.
+
+The prototype miss a few important features like complex parameters and hierarchies/groups of parameters. Complex
+parameters has not been considered. Different hierarchies and ways to group parameters have been discussed in early
+protypes. Finally, this prototype implements the easiest way of grouping parameters. Just an only configuration is
+allowed by a node.
+
+Unfortunately, although an example of 'rosservice call' has been requested, it cannot be provided. An addicional layer
+over ros services and messages has been implemented to support different data types in a simple way. This decision
+increases the necessity of external tools early referenced to provide an easy and convenient way to reconfigure 
+parameters.
+
+All commented features has not been implemented or an easier solution has been implemented to simplify the prototype 
+and make it more understandable. With or without them the prototype remains the same (conceptually). I think it is 
+enough to clearly express my idea of how new parameter's API should be and how it would work. A lot of work is 
+neccesary to make this prototype a serious candidate to replace the current tools.
+
+## Design decisions
+
+### Global/Local parameters
+
+One of the most important decisions was to use global or local parameters. Finally, local parameters have been chosen for many reasons.
+
+A robot control system usually comprises many nodes. These nodes operate at a fine-grained scale and they work together to make more complex tasks. Nodes should be independent and they should do one thing (and do it well). With the design of this component I have tried to improve this features.
+
+When possible local parameters should be used rather than globals because they enhance encapsulation and independence of nodes. But sometimes global parameters are useful. The current Parameter Server is used to initialize values in the configuration.
+
+Local parameters live along with a node. If the node dies, for whatever reason, the configuration dies as well. Parameters has a name and a value. If the node crashes theres no way to recover the last configuration. A few methods are provided to let the user write the configuration to a file and read it when necessary.
+
+### Public/Private parameters
+
+All parameters in a configuration are public. Having private parameters in a configuration is only useful for debug purposes. To keep the API simpler private parameters have been omitted.
+
+Parameters in a configuration can be changed at any time if the node allows them.
+
+### Static/Dynamic parameters
+
+All parameters in a configuration are dynamic. The API doesn't support static parameters. The behaviour of a static parameter can be simulated forbidding manually the change in the server callback code.
+
+### Parameter grouping
+
+Parameters are grouped into configurations. Nodes can have just one configuration. This decision was made to strengthen the single responsibility principle. Nodes should do one thing. If a node needs two or more configurations, maybe that is a sign that the node is doing too much.
+
+### On change notifications
+
+Nodes can request a change at any moment. The user provides a callback which is called every time a change is requested. Only the server node decides if a change is valid or not, again to encourage encapsulation.
+
+The requester gets a true if the new configuration is accepted or a false if not, or the communication with the reconfigurable server fails.
+
+### On update notifications
+
+Nodes can listen to changes on a configuration. The update notifications rely over ROS topics, so there's no guarantee that the change is received by all listeners. Topics are widely used in ROS systems despite of the non-guarantee delivery mechanism. Using services to implement a one-to-many delivery mechanism is quite inefficient and difficult to manage.
+
+### External configuration
+
+External configuration is needed to document a little bit the parameters. Using the wiki or the README.md file from github are possible solutions.
+
+
 ## Workflow ##
 
 The first task was to look at the node parameterization problem's desing space, to engage the community for use cases
@@ -346,43 +428,3 @@ void configuration_listener(const config::Configuration& conf) {
 ros::NodeHandle nh("server");
 config::ConfigurationListener listener(nh, configuration_listener);
 ```
-
-## Design decisions
-
-### Global/Local parameters
-
-One of the most important decisions was to use global or local parameters. Finally, local parameters have been chosen for many reasons.
-
-A robot control system usually comprises many nodes. These nodes operate at a fine-grained scale and they work together to make more complex tasks. Nodes should be independent and they should do one thing (and do it well). With the design of this component I have tried to improve this features.
-
-When possible local parameters should be used rather than globals because they enhance encapsulation and independence of nodes. But sometimes global parameters are useful. The current Parameter Server is used to initialize values in the configuration.
-
-Local parameters live along with a node. If the node dies, for whatever reason, the configuration dies as well. Parameters has a name and a value. If the node crashes theres no way to recover the last configuration. A few methods are provided to let the user write the configuration to a file and read it when necessary.
-
-### Public/Private parameters
-
-All parameters in a configuration are public. Having private parameters in a configuration is only useful for debug purposes. To keep the API simpler private parameters have been omitted.
-
-Parameters in a configuration can be changed at any time if the node allows them.
-
-### Static/Dynamic parameters
-
-All parameters in a configuration are dynamic. The API doesn't support static parameters. The behaviour of a static parameter can be simulated forbidding manually the change in the server callback code.
-
-### Parameter grouping
-
-Parameters are grouped into configurations. Nodes can have just one configuration. This decision was made to strengthen the single responsibility principle. Nodes should do one thing. If a node needs two or more configurations, maybe that is a sign that the node is doing too much.
-
-### On change notifications
-
-Nodes can request a change at any moment. The user provides a callback which is called every time a change is requested. Only the server node decides if a change is valid or not, again to encourage encapsulation.
-
-The requester gets a true if the new configuration is accepted or a false if not, or the communication with the reconfigurable server fails.
-
-### On update notifications
-
-Nodes can listen to changes on a configuration. The update notifications rely over ROS topics, so there's no guarantee that the change is received by all listeners. Topics are widely used in ROS systems despite of the non-guarantee delivery mechanism. Using services to implement a one-to-many delivery mechanism is quite inefficient and difficult to manage.
-
-### External configuration
-
-External configuration is needed to document a little bit the parameters. Using the wiki or the README.md file from github are possible solutions.
