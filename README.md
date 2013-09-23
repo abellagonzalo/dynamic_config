@@ -6,20 +6,20 @@ Dynamic Config provides methods to change and query a node configuration. A conf
 define the behaviour of the node. Nodes can change and query other node's configuration as well as be notified when 
 a change is made to the configuration.
 
-## Framework ##
+## Framework
 
 This project is part of GSoC 2013 program. The goal of the project is to explore options to integrate dynamic_reconfigure
 and the current parameter system into a new brand unified API. The scope is limited to the C++ API, but having
 in mind that it should be easy to implement in other client libraries.
 
-## Overview ##
+## Overview
 
 This demo was made to demonstrate certain design decisions. It is not expected to be a drop in replacement for the
 existing tools rosparam and dynamic_reconfire. This prototype shows a different set of choices of the current
 tools for some of the key trade-offs.
 
 To show to the community the general idea of my design, the prototype implements just the basic features which
-I considered the most important:
+I consider the most important:
 
 * Publish a configuration.
 * Request the configuration of a node.
@@ -28,7 +28,16 @@ I considered the most important:
 * Notify other nodes when configuration changes.
 * Introspection of parameters in a configuration.
 
+### Strong points
 
+My prototype has a few strong features which I think improve the current tools. 
+
+Services and topics used to publish a configuration and reconfigure the node are instantiated in the node. 
+
+### Weak points
+
+The lack of time forced me to leave out some interesting and important features. In spite of they are important, in my
+opinion, they are not essential to show the functionalities of this prototype.
 
 Metadata of parameters such as description, range/domain or parameter order was discussed and implemented in early
 prototypes. It hasn't been included in this one because I did not considered it a basic feature. It would be a must
@@ -55,15 +64,24 @@ neccesary to make this prototype a serious candidate to replace the current tool
 
 ## Design decisions
 
+This section explains the most important decisions I have made and why.
+
 ### Global/Local parameters
 
-One of the most important decisions was to use global or local parameters. Finally, local parameters have been chosen for many reasons.
+One of the most important decisions was to use global or local parameters. Finally, local parameters have been chosen
+for many reasons.
 
-A robot control system usually comprises many nodes. These nodes operate at a fine-grained scale and they work together to make more complex tasks. Nodes should be independent and they should do one thing (and do it well). With the design of this component I have tried to improve this features.
+A robot control system usually comprises many nodes. These nodes operate at a fine-grained scale and they work together
+to make more complex tasks. Nodes should be independent and they should do one thing (and do it well). With the design
+of this component I have tried to improve this features.
 
-When possible local parameters should be used rather than globals because they enhance encapsulation and independence of nodes. But sometimes global parameters are useful. The current Parameter Server is used to initialize values in the configuration.
+When possible local parameters should be used rather than globals because they enhance encapsulation and independence of
+nodes. But sometimes global parameters are useful. The current Parameter Server is used to initialize values in the 
+configuration.
 
-Local parameters live along with a node. If the node dies, for whatever reason, the configuration dies as well. Parameters has a name and a value. If the node crashes theres no way to recover the last configuration. A few methods are provided to let the user write the configuration to a file and read it when necessary.
+Local parameters live along with a node. If the node dies, for whatever reason, the configuration dies as well. 
+Parameters has a name and a value. If the node crashes theres no way to recover the last configuration. A few methods
+are provided to let the user write the configuration to a file and read it when necessary.
 
 ### Public/Private parameters
 
