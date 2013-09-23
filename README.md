@@ -2,8 +2,37 @@
 
 Prototype repository for the GSoC's project New c++ Parameter API.
 
-Dynamic Config provides methods to change and query a node configuration. A configuration is a set of parameters that define the behaviour of the node. Nodes can change and query other node's configuration as well as be notified when a change is made to the configuration.
+Dynamic Config provides methods to change and query a node configuration. A configuration is a set of parameters that 
+define the behaviour of the node. Nodes can change and query other node's configuration as well as be notified when 
+a change is made to the configuration.
 
+## Framework ##
+
+This project is part of GSoC 2013 program. The goal of the project is to explore options to integrate dynamic_reconfigure
+and the current parameter system into a new brand unified API. The scope is limited to the C++ API, but having
+in mind that it should be easy to implement in other client libraries.
+
+## Workflow ##
+
+The first task was to look at the node parameterization problem's desing space, to engage the community for use cases
+and to review existing work on the subject:
+
+https://groups.google.com/forum/#!topic/ros-sig-ng-ros/YzCmoIsN0o8
+
+In parallel existing material was reviewed, such as @tkruse's work
+
+https://github.com/tkruse/rep/blob/nodeparam/nodeparam-REP.rst
+
+To get into the development workflow and learn about the existing tools I started working on some ideas for the API
+given by the mentor. The result of this work is a collection of design trade-offs which were described in the wiki page
+
+http://wiki.ros.org/sig/NextGenerationROS/Parameters
+
+Based on this list, design decisions were taken in order to create a prototype and to deliver it to the community.
+I took the decisions which in my opinion were correct because consensus in open source communities can take a long time.
+
+The workflow has been always directed and supervised by the mentor and the ROS OSRF staff with frequent communication
+via email and hangouts.
 
 ## Add dynamic_config to your package
 
